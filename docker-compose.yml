@@ -1,0 +1,24 @@
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/infra/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  legacy_adapter:
+    build:
+      context: ./backend
+      dockerfile: services/legacy_adapter/Dockerfile
+    depends_on:
+      - mysql
+    volumes:
+      - ./data/input:/app/input
+      - ./data/processed:/app/processed
+
+volumes:
+  mysql_data:
