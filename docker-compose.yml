@@ -9,6 +9,12 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./backend/infra/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+  
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
 
   legacy_adapter:
     build:
@@ -19,6 +25,23 @@ services:
     volumes:
       - ./data/input:/app/input
       - ./data/processed:/app/processed
+  
+  order_api:
+    build:
+      context: ./backend
+      dockerfile: services/order_api/Dockerfile
+    depends_on:
+      - mysql
+      - rabbitmq
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 
+      RABBIT_HOST: rabbitmq
+      RABBIT_QUEUE: order_queue
+    ports:
+      - "8001:8000"
+  
 volumes:
   mysql_data:
