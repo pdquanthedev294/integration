@@ -10,6 +10,17 @@ services:
       - mysql_data:/var/lib/mysql
       - ./backend/infra/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
   
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./backend/infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+  
   rabbitmq:
     image: rabbitmq:3-management
     ports:
@@ -43,5 +54,26 @@ services:
     ports:
       - "8001:8000"
   
+  order_worker:
+    build:
+      context: ./backend
+      dockerfile: services/order_worker/Dockerfile
+    depends_on:
+      - mysql
+      - rabbitmq
+      - postgres
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+      RABBIT_HOST: rabbitmq
+      RABBIT_QUEUE: order_queue
+  
 volumes:
   mysql_data:
+  pg_data:

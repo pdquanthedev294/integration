@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS payments (
+  id SERIAL PRIMARY KEY,
+  order_id INT NOT NULL,
+  user_id INT NOT NULL,
+  product_id INT NOT NULL,
+  quantity INT NOT NULL,
+  paid_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
